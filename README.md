@@ -3,6 +3,9 @@
 Code and data for "Text-Promptable Segmentation for Medical Image Sequences". 
 
 ## Datasets
+We have collected 18 datasets consist of medical image sequences, including 20 anatomical structures across 4 different imaging modalities.
+**Note:** if you plan to use these datasets, be sure to follow the citation guidelines provided by the original authors.
+
 | Dataset                                        | Class                                                                                 | Link                                                                                   | Processed data |
 |------------------------------------------------|---------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|:----------------:|
 | 2018 Atria Segmentation Data                   | Left atria                                                                            | [link](https://www.cardiacatlas.org/atriaseg2018-challenge/atria-seg-data/)            |    upcoming    |
@@ -24,8 +27,6 @@ Code and data for "Text-Promptable Segmentation for Medical Image Sequences".
 | ETIS                                           | Polyp                                                                                 |                                                                                        |    upcoming    |
 | ASU-Mayo                                       | Polyp                                                                                 |                                                                                        |    upcoming    |
 
-
-**Note:** if you plan to use these datasets, be sure to follow the citation guidelines provided by the original authors.
 
 ## Installation
 We use `python=3.9` and recommend `torch 1.12.1`, `cuda 11.3`.
