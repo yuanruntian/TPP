@@ -1,1 +1,39 @@
 # TP-MISS
+
+Code and data for "Text-Promptable Segmentation for Medical Image Sequences". 
+
+## Datasets
+| Dataset                                        | Class                                                                                 | Link                                                                                   | Processed data |
+|------------------------------------------------|---------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|:----------------:|
+| 2018 Atria Segmentation Data                   | Left atria                                                                            | [link](https://www.cardiacatlas.org/atriaseg2018-challenge/atria-seg-data/)            |    upcoming    |
+| RVSC                                           | Right ventricle                                                                       | [link](https://rvsc.projets.litislab.fr/)                                              |    upcoming    |
+| ACDC                                           | Left ventricle,  Myocardium,  Right ventricle                                         | [link](https://www.creatis.insa-lyon.fr/Challenge/acdc/index.html)                     |    upcoming    |
+| CAMUS                                          | Left ventricle,  Myocardium,  Left atria                                              | [link](https://www.creatis.insa-lyon.fr/Challenge/camus/databases.html)                |    upcoming    |
+| NSCLC                                          | Lung                                                                                  | [link](https://wiki.cancerimagingarchive.net/pages/viewpage.action?pageId=68551327)    |    upcoming    |
+| Spleen Segmentation Dataset                    | Spleen                                                                                | [link](https://ieeexplore.ieee.org/document/9112221)                                   |    upcoming    |
+| Pancreas-CT                                    | Pancreas                                                                              | [link](https://www.cancerimagingarchive.net/collection/pancreas-ct/)                   |    upcoming    |
+| BTCV                                           | Aorta,  Gallbladder,  Kidney (L),  Kidney (R),  Liver,  Pancreas,  Spleen,  Stomach,  | [link](https://www.synapse.org/#!Synapse:syn3193805/wiki/217789)                       |    upcoming    |
+| Micro-Ultrasound Prostate Segmentation Dataset | Prostate                                                                              | [link](https://github.com/mirthAI/MicroSegNet)                                         |    upcoming    |
+| BraTS 2019                                     | Brain tumor                                                                           | [link](https://www.kaggle.com/datasets/aryashah2k/brain-tumor-segmentation-brats-2019) |    upcoming    |
+| Breast_Cancer_DCE-MRI_Data                     | Breast mass                                                                           | [link](https://zenodo.org/records/8068383)                                             |    upcoming    |
+| RIDER                                          | Breast mass                                                                           | [link](https://www.cancerimagingarchive.net/collection/rider-breast-mri/)              |    upcoming    |
+| LiTS                                           | Liver tumor                                                                           | [link](https://competitions.codalab.org/competitions/17094)                            |    upcoming    |
+| KiTS 2023                                      | Kidney tumor                                                                          | [link](https://kits-challenge.org/kits23/)                                             |    upcoming    |
+| CVC-ClinicDB                                   | Polyp                                                                                 |                                                                                        |    upcoming    |
+| CVC-ColonDB                                    | Polyp                                                                                 |                                                                                        |    upcoming    |
+| ETIS                                           | Polyp                                                                                 |                                                                                        |    upcoming    |
+| ASU-Mayo                                       | Polyp                                                                                 |                                                                                        |    upcoming    |
+
+
+**Note:** if you plan to use these datasets, be sure to follow the citation guidelines provided by the original authors.
+
+## Installation
+We use `python=3.9` and recommend `torch 1.12.1`, `cuda 11.3`.
+
+    conda create -n env_name python=3.9
+    pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
+    pip install -r requirements.txt
+
+## Usage
+Upcoming...
+
