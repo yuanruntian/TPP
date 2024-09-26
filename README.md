@@ -4,6 +4,7 @@ Code and data for "Text-Promptable Segmentation for Medical Image Sequences".
 
 ## Datasets
 We have collected 18 datasets consist of medical image sequences, including 20 anatomical structures across 4 different imaging modalities.
+
 **Note:** if you plan to use these datasets, be sure to follow the citation guidelines provided by the original authors.
 
 | Dataset                                        | Class                                                                                 | Link                                                                                   | Processed data |
