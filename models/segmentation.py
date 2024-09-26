@@ -470,28 +470,12 @@ class VisionLanguageFusionModule(nn.Module):
 
         # attention_outputs = torch.stack(attention_outputs)  
         weights = torch.stack(weights)  # Shape: (3, thw, 1)
-        # print("weights shape: ", weights.shape)
         # Normalize weights (e.g., using softmax)
         weights = nn.functional.softmax(weights, dim=0)  # Shape: (3, thw, 1)
-        # 计算每一列的平均值
         column_means = torch.mean(weights, dim=1)  # Shape: (3, 1, 1)
-        # 我们可以通过比较这些平均值来找出最大的列
-        max_index = torch.argmax(column_means)  # 找出最大值的索引
-        # 打印结果
-        # print(f"The largest tensor (column) is at index {max_index} with mean value {column_means[max_index]}")
-        
-        # print("weights shape: ", weights.shape)
-        # Compute weighted sum of attention outputs
-        # weighted_attention = torch.sum(attention_outputs * weights.unsqueeze(2).unsqueeze(3), dim=0)  # Shape: (b, thw, c)
+        max_index = torch.argmax(column_means) 
         # Update tgt by multiplying with weighted_attention
         tgt = (tgt * attention_outputs[0] * weights[0].unsqueeze(-1) + tgt * attention_outputs[1] * weights[1].unsqueeze(-1) + tgt * attention_outputs[2] * weights[2].unsqueeze(-1)) / 3.
-
-        # tgt2 = self.multihead_attn(query=self.with_pos_embed(tgt, query_pos),
-        #                            key=self.with_pos_embed(memory, pos),
-        #                            value=memory, attn_mask=None,
-        #                            key_padding_mask=memory_key_padding_mask)[0]
-        # # print("tgt2 shape: ", tgt2.shape)
-        # tgt = tgt * tgt2  # tgt和tgt2的shape一样
 
         return tgt, max_index
 
