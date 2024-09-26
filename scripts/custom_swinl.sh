@@ -3,7 +3,7 @@ OUTPUT_DIR=/work_dir/custom_swinl
 # training
 python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=29700 --use_env \
 main.py --with_box_refine --freeze_text_encoder --binary \
---epochs 10 --lr_drop 3 5 \
+--epochs 5 --lr_drop 3 5 \
 --lr=1e-5 \
 --lr_backbone=5e-6 \
 --num_frames=3 \
