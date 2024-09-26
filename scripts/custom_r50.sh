@@ -7,9 +7,6 @@ main.py --with_box_refine --freeze_text_encoder --binary \
 --lr=1e-4 \
 --lr_backbone=5e-6 \
 --num_frames=3 \
---sampler_steps 4 \
---sampler_lengths 2 3 \
---sampler_interval=5 \
 --output_dir=${OUTPUT_DIR} \
 --online \
 --epochs 5 \
