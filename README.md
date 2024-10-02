@@ -1,6 +1,6 @@
-# TP-MISS
+# TPP
 
-Code and data for "Text-Promptable Segmentation for Medical Image Sequences". 
+Code and data for "Text-promptable Propagation for Referring Medical Image Sequence Segmentation". 
 
 ## Datasets
 We have collected 18 datasets consist of medical image sequences, including 20 anatomical structures across 4 different imaging modalities.
