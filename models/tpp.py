@@ -34,7 +34,7 @@ def _get_clones(module, N):
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"  # this disables a huggingface tokenizer warning (printed every epoch)
 
-class TPMISS(nn.Module):
+class TPP(nn.Module):
 
     def __init__(self, args, backbone, transformer, criterion, num_classes, num_queries, num_feature_levels,
                  num_frames, mask_dim, dim_feedforward,
@@ -132,11 +132,8 @@ class TPMISS(nn.Module):
 
         # The below two lines needs to download models from Huggingface (https://huggingface.co/roberta-base/tree/main)
         # If not, please use the above two lines
-        self.tokenizer = RobertaTokenizerFast.from_pretrained('/root/TPMISS/pretrained_weights/roberta-base')
-        self.text_encoder = RobertaModel.from_pretrained('/root/TPMISS/pretrained_weights/roberta-base')
-
-        # self.tokenizer = AutoTokenizer.from_pretrained('/root/TPMISS/pretrained_weights/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext')
-        # self.text_encoder = AutoModel.from_pretrained('/root/TPMISS/pretrained_weights/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext')
+        self.tokenizer = RobertaTokenizerFast.from_pretrained('/root/TPP/pretrained_weights/roberta-base')
+        self.text_encoder = RobertaModel.from_pretrained('/root/TPP/pretrained_weights/roberta-base')
 
         if freeze_text_encoder:
             for p in self.text_encoder.parameters():
