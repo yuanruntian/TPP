@@ -36,5 +36,14 @@ We use `python=3.9` and recommend `torch 1.12.1`, `cuda 11.3`.
     pip install -r requirements.txt
 
 ## Usage
-Upcoming...
+Training
+
+    # ResNet-50
+    bash scripts/custom_r50.sh
+
+    # Swin Tranformer-Large
+    bash scripts/custom_swinl.sh
+
+    # Video Swin Transformer-Tiny
+    bash scripts/custom_vswint.sh
 
