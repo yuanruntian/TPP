@@ -45,5 +45,5 @@ Training
     bash scripts/custom_swinl.sh
 
     # Video Swin Transformer-Tiny
-    bash scripts/custom_vswint.sh
+    bash scripts/custom_video_swin_t.sh
 
