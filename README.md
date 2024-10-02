@@ -3,7 +3,7 @@
 Code and data for "Text-promptable Propagation for Referring Medical Image Sequence Segmentation". 
 
 ## Datasets
-We have collected 18 datasets consist of medical image sequences, including 20 anatomical structures across 4 different imaging modalities.
+We curate a large and comprehensive benchmark for referring medical image sequence segmentation. The benchmark is sourced from 18 datasets consist of medical image sequences, including 20 anatomical structures across 4 different imaging modalities. Processed data with text prompts is coming soon.
 
 **Note:** if you plan to use these datasets, be sure to follow the citation guidelines provided by the original authors.
 | Dataset                                        | Class                                                                               | Modality   | Link                                                                                   | Processed data |
