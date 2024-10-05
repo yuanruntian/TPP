@@ -12,7 +12,7 @@ from .segmentation import (dice_loss, sigmoid_focal_loss)
 from einops import rearrange
 
 class SetCriterion(nn.Module):
-    """ This class computes the loss for ReferFormer.
+    """ This class computes the loss.
     The process happens in two steps:
         1) we compute hungarian assignment between ground truth boxes and the outputs of the model
         2) we supervise each pair of matched ground-truth / prediction (supervise class and box)
@@ -114,7 +114,6 @@ class SetCriterion(nn.Module):
         assert "pred_masks" in outputs
 
         src_idx = self._get_src_permutation_idx(indices)
-        # tgt_idx = self._get_tgt_permutation_idx(indices)
 
         src_masks = outputs["pred_masks"] 
         src_masks = src_masks.transpose(1, 2) 
@@ -134,7 +133,6 @@ class SetCriterion(nn.Module):
 
         src_masks = src_masks[src_idx] 
         # upsample predictions to the target size
-        # src_masks = interpolate(src_masks, size=target_masks.shape[-2:], mode="bilinear", align_corners=False) 
         src_masks = src_masks.flatten(1) # [b, thw]
 
         target_masks = target_masks.flatten(1) # [b, thw]
@@ -151,7 +149,6 @@ class SetCriterion(nn.Module):
         assert "pred_masks" in outputs
 
         src_idx = self._get_src_permutation_idx(indices)
-        # tgt_idx = self._get_tgt_permutation_idx(indices)
 
         src_masks = outputs["pred_masks"]
         src_masks = src_masks.transpose(1, 2)
@@ -171,7 +168,6 @@ class SetCriterion(nn.Module):
 
         src_masks = src_masks[src_idx]
         # upsample predictions to the target size
-        # src_masks = interpolate(src_masks, size=target_masks.shape[-2:], mode="bilinear", align_corners=False)
         src_masks = src_masks.flatten(1).to(torch.bool)  # [b, thw]
 
         target_masks = target_masks.flatten(1).to(torch.bool)  # [b, thw]
@@ -218,7 +214,6 @@ class SetCriterion(nn.Module):
         # Compute the average number of target boxes accross all nodes, for normalization purposes
         target_valid = torch.stack([t["valid"] for t in targets], dim=0).reshape(-1) # [B, T] -> [B*T]
         num_boxes = target_valid.sum().item()
-        # num_boxes = len(target_valid)
         num_boxes = torch.as_tensor([num_boxes], dtype=torch.float, device=next(iter(outputs.values())).device)
         if is_dist_avail_and_initialized():
             torch.distributed.all_reduce(num_boxes)

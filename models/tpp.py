@@ -15,7 +15,6 @@ from util.misc import (NestedTensor, nested_tensor_from_tensor_list,
 
 from .position_encoding import PositionEmbeddingSine1D
 from .backbone import build_backbone
-# from .deformable_transformer import build_deforamble_transformer
 from .deformable_transformer_plus import build_deforamble_transformer
 from .segmentation import CrossModalFPNDecoder, VisionLanguageFusionModule
 from .matcher import build_matcher
@@ -46,8 +45,7 @@ class TPP(nn.Module):
             backbone: torch module of the backbone to be used. See backbone.py
             transformer: torch module of the transformer architecture. See transformer.py
             num_classes: number of object classes
-            num_queries: number of object queries, ie detection slot. This is the maximal number of objects
-                         ReferFormer can detect in a video. For ytvos, we recommend 5 queries for each frame.
+            num_queries: number of object queries, ie detection slot.
             num_frames:  number of clip frames
             mask_dim: dynamic conv inter layer channel number.
             dim_feedforward: vision-language fusion module ffn channel number.
@@ -127,13 +125,8 @@ class TPP(nn.Module):
 
         # Build Text Encoder
 
-        # self.tokenizer = RobertaTokenizerFast.from_pretrained('roberta-base')
-        # self.text_encoder = RobertaModel.from_pretrained('roberta-base')
-
-        # The below two lines needs to download models from Huggingface (https://huggingface.co/roberta-base/tree/main)
-        # If not, please use the above two lines
-        self.tokenizer = RobertaTokenizerFast.from_pretrained('/root/TPP/pretrained_weights/roberta-base')
-        self.text_encoder = RobertaModel.from_pretrained('/root/TPP/pretrained_weights/roberta-base')
+        self.tokenizer = RobertaTokenizerFast.from_pretrained('roberta-base')
+        self.text_encoder = RobertaModel.from_pretrained('roberta-base')
 
         if freeze_text_encoder:
             for p in self.text_encoder.parameters():
@@ -234,7 +227,6 @@ class TPP(nn.Module):
         b = len(captions)
         t = pos[0].shape[0] // b
 
-        # For A2D-Sentences and JHMDB-Sentencs dataset, only one frame is annotated for a clip
         if 'valid_indices' in targets[0]:
             valid_indices = torch.tensor([i * t + target['valid_indices'] for i, target in enumerate(targets)]).to(
                 pos[0].device)
@@ -248,9 +240,6 @@ class TPP(nn.Module):
             t = 1
 
         text_features, text_sentence_features = self.forward_text(captions, device=pos[0].device)
-        
-        # print("text_features.shape: ", text_features.tensors.shape)  # 3, len, c
-        # print("text_sentence_features.shape: ", text_sentence_features.shape)  # 3, c
 
         # prepare vision and text features for transformer
         srcs = []
@@ -258,10 +247,7 @@ class TPP(nn.Module):
         poses = []
 
         text_pos = self.text_pos(text_features).permute(2, 0, 1)  # [length, batch_size->3, c]
-        # print("text_pos.shape: ", text_pos.shape)
         text_word_features, text_word_masks = text_features.decompose()
-        # print("text_word_features.shape: ", text_word_features.shape) # 3, len, c
-        # print("text_word_masks.shape: ", text_word_masks.shape)  # 3, len
 
         text_word_features = text_word_features.permute(1, 0, 2)  # [length, batch_size, c]
 
@@ -273,7 +259,6 @@ class TPP(nn.Module):
 
             # vision language early-fusion
             src_proj_l = rearrange(src_proj_l, '(b t) c h w -> (t h w) b c', b=b, t=t)
-            # print("src_proj_l.shape: ", src_proj_l.shape)
             src_proj_l, _ = self.fusion_module(tgt=src_proj_l,
                                             memory=text_word_features,
                                             memory_key_padding_mask=text_word_masks,
@@ -289,7 +274,6 @@ class TPP(nn.Module):
             assert mask is not None
 
         if self.num_feature_levels > (len(features) - 1):
-            # print("flag: 1")
             _len_srcs = len(features) - 1  # fpn level
             for l in range(_len_srcs, self.num_feature_levels):
                 if l == _len_srcs:
@@ -324,21 +308,11 @@ class TPP(nn.Module):
             text_embed = track_res['track_embedding'].unsqueeze(0).unsqueeze(0)  # torch.Size([1, 1, 5, 256])
         else:
             # text_sentence_features 3,256 -> 1,1,5,256
-            # text_embed = text_sentence_features.unsqueeze(0).unsqueeze(0)
             text_embed = text_sentence_features[weight_index, :].unsqueeze(0).unsqueeze(0)
-            # text_embed = repeat(text_embed, 'b t c -> b t q c', q=self.num_queries)
             text_embed = repeat(text_embed, 'b t c -> b t q c', q=track_res['pos_embedding'].shape[0])
 
-        # no query propagation
-        # text_embed = text_sentence_features[weight_index, :].unsqueeze(0).unsqueeze(0)
-        # text_embed = repeat(text_embed, 'b t c -> b t q c', q=track_res['pos_embedding'].shape[0])
-
-        # no prompt
-        # text_embed = track_res['track_embedding'].unsqueeze(0).unsqueeze(0)
-        
         hs, memory, init_reference, inter_references, enc_outputs_class, enc_outputs_coord_unact, inter_samples, track_memory_current = \
             self.transformer(srcs, text_embed, masks, poses, query_embeds, track_res['ref_pts'], track_res['track_mask'], track_res['track_memory'])
-        # track_res['track_memory'] = track_memory_current  # bs,h/8,w/8,c
 
         out = {}
         # prediction
@@ -369,7 +343,6 @@ class TPP(nn.Module):
         out['pred_boxes'] = outputs_coord[-1]  # [batch_size, time, num_queries_per_frame, 4]
 
         # Segmentation
-        # weight_index = 0
         mask_features = self.pixel_decoder(features, text_features, pos, memory, weight_index, nf=t)  # [batch_size*time, c, out_h, out_w]
         mask_features = rearrange(mask_features, '(b t) c h w -> b t c h w', b=b, t=t)
 
@@ -403,7 +376,7 @@ class TPP(nn.Module):
         out['hs'] = hs[-1]
         out['pos_embedding'] = query_embeds
         
-        return out, track_memory_current  # 保存上一帧的memory
+        return out, track_memory_current
 
     def post_process_single_image(self, frame_res, track_res, is_last, track_memory=None):
 
@@ -420,7 +393,6 @@ class TPP(nn.Module):
         pred_boxes = pred_boxes.view([video_len, -1, 4]).detach().clone()
         track_res['ref_pts'] = inverse_sigmoid(pred_boxes[0])
         # no bbox propagation
-        # track_res['ref_pts'] = track_res['ref_pts'][max_inds, ...]
 
         track_res['track_memory'] = track_memory  # 1, h/8, w/8, c
 
@@ -431,7 +403,6 @@ class TPP(nn.Module):
         track_res['track_mask'] = track_res['track_mask'][max_inds, ...].unsqueeze(0)  # bs, 1, h/4, w/4
         # downsample to 1/2
         track_res['track_mask'] = F.interpolate(track_res['track_mask'], (track_memory.shape[1], track_memory.shape[2]), mode='bilinear', align_corners=False)
-        # print("track_res['track_mask'].shape: ", track_res['track_mask'].shape)
 
         # update query and position embedding in track
         output_embedding = frame_res['hs'][range(video_len), max_inds, ...]  # .detach().clone()
@@ -512,7 +483,6 @@ class TPP(nn.Module):
                 frame_res, track_memory = self.forward_single_frame(frame, track_res, captions, target_i)
             # prop
             track_res = self.post_process_single_image(frame_res, track_res, is_last, track_memory)
-            # track_res = self.generate_empty_tracks()
 
             loss_dict, _ = self.criterion(frame_res, target_i)
             loss_dicts.append(loss_dict)
@@ -546,10 +516,6 @@ class TPP(nn.Module):
             text_features = encoded_text.last_hidden_state
             text_features = self.resizer(text_features)
             text_masks = text_attention_mask
-
-            # no prompt
-            # text_features = torch.zeros_like(text_features)
-            # text_masks = torch.zeros_like(text_masks)
 
             text_features = NestedTensor(text_features, text_masks)  # NestedTensor
 
@@ -788,15 +754,7 @@ def build(args):
         num_classes = 1
     else:
         if args.dataset_file == 'custom':
-            num_classes = 17  ## 加数据集时类别也要改，不包含背景类
-        elif args.dataset_file == 'ytvos':
-            num_classes = 65
-        elif args.dataset_file == 'davis':
-            num_classes = 78
-        elif args.dataset_file == 'a2d' or args.dataset_file == 'jhmdb':
-            num_classes = 1
-        else:
-            num_classes = 91  # for coco
+            num_classes = 17
     device = torch.device(args.device)
 
     # backbone
@@ -838,7 +796,7 @@ def build(args):
         focal_alpha=args.focal_alpha)
     criterion.to(device)
     ########
-    model = TPMISS(
+    model = TPP(
         args,
         backbone,
         transformer,
@@ -859,6 +817,5 @@ def build(args):
     )
     #################
 
-    # postprocessors, this is used for coco pretrain but not for rvos
     postprocessors = build_postprocessors(args, args.dataset_file)
     return model, criterion, postprocessors

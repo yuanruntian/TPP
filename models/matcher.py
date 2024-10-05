@@ -126,8 +126,6 @@ class HungarianMatcher(nn.Module):
             # we average the cost on valid frames
             cost_class = []
             for t in range(nf):
-                # if tgt_valid[t] == 0:
-                #     continue
 
                 out_prob_split = out_prob[t]    
                 tgt_ids_split = tgt_ids[t].unsqueeze(0)     
@@ -190,14 +188,7 @@ def build_matcher(args):
     else:
         if args.dataset_file == 'custom':
             num_classes = 17
-        elif args.dataset_file == 'ytvos':
-            num_classes = 65 
-        elif args.dataset_file == 'davis':
-            num_classes = 78
-        elif args.dataset_file == 'a2d' or args.dataset_file == 'jhmdb':
-            num_classes = 1
-        else: 
-            num_classes = 91  # for coco
+
     return HungarianMatcher(cost_class=args.set_cost_class, 
                             cost_bbox=args.set_cost_bbox, 
                             cost_giou=args.set_cost_giou,

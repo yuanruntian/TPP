@@ -13,11 +13,6 @@ from PIL import Image
 
 from einops import rearrange, repeat
 
-try:
-    from panopticapi.utils import id2rgb, rgb2id
-except ImportError:
-    pass
-
 import fvcore.nn.weight_init as weight_init
 
 from .position_encoding import PositionEmbeddingSine1D
@@ -109,21 +104,15 @@ class CrossModalFPNDecoder(nn.Module):
         lateral_convs_new = []
         output_convs = []
 
-        # feature_channels_new = [256, 512, 1024, 2048]
-
         use_bias = norm == ""
         for idx, in_channels in enumerate(feature_channels):
             # in_channels: 4x -> 32x
             lateral_norm = get_norm(norm, conv_dim)
-            # lateral_norm_new = get_norm(norm, conv_dim)
             output_norm = get_norm(norm, conv_dim)
 
             lateral_conv = Conv2d(
                     in_channels, conv_dim, kernel_size=1, bias=use_bias, norm=lateral_norm
                 )
-            # lateral_conv_new = Conv2d(
-            #     feature_channels_new[idx], conv_dim, kernel_size=1, bias=use_bias, norm=lateral_norm_new
-            # )
             output_conv = Conv2d(
                 conv_dim,
                 conv_dim,
@@ -135,21 +124,17 @@ class CrossModalFPNDecoder(nn.Module):
                 activation=F.relu,
             )
             weight_init.c2_xavier_fill(lateral_conv)
-            # weight_init.c2_xavier_fill(lateral_conv_new)
             weight_init.c2_xavier_fill(output_conv)
             stage = idx+1
             self.add_module("adapter_{}".format(stage), lateral_conv)
-            # self.add_module("adapter_new_{}".format(stage), lateral_conv_new)
             self.add_module("layer_{}".format(stage), output_conv)
 
             lateral_convs.append(lateral_conv)
-            # lateral_convs_new.append(lateral_conv_new)
             output_convs.append(output_conv)
             
         # Place convs into top-down order (from low to high resolution)
         # to make the top-down computation in forward clearer.
         self.lateral_convs = lateral_convs[::-1]
-        # self.lateral_convs_new = lateral_convs_new[::-1]
         self.output_convs = output_convs[::-1]
 
         self.mask_dim = mask_dim
@@ -191,7 +176,6 @@ class CrossModalFPNDecoder(nn.Module):
 
         for idx, (mem, f, pos) in enumerate(zip(memory[::-1], features[1:][::-1], poses[1:][::-1])): # 32x -> 8x
             lateral_conv = self.lateral_convs[idx]
-            # lateral_conv_new = self.lateral_convs_new[idx]
             output_conv = self.output_convs[idx]
             cross_attn = self.cross_attns[idx]
             
@@ -202,7 +186,6 @@ class CrossModalFPNDecoder(nn.Module):
 
             # NOTE: here the (h, w) is the size for current fpn layer
             vision_features = lateral_conv(mem)  # [b*t, c, h, w]
-            # vision_features = lateral_conv_new(f.decompose()[0])
             vision_features = rearrange(vision_features, '(b t) c h w -> (t h w) b c', b=b, t=t)
             vision_pos = rearrange(pos, '(b t) c h w -> (t h w) b c', b=b, t=t)
             vision_masks = rearrange(x_mask, '(b t) h w -> b (t h w)', b=b, t=t)
@@ -442,33 +425,26 @@ class VisionLanguageFusionModule(nn.Module):
     def forward(self, tgt, memory,
                 memory_key_padding_mask: Optional[Tensor] = None,
                 pos: Optional[Tensor] = None,
-                query_pos: Optional[Tensor] = None):
-        
-        # print("tgt shape: ", tgt.shape)  # thw, b, c
+                query_pos: Optional[Tensor] = None,
+                h=0,w=0):
 
         attention_outputs = []
         weights = []
 
         for i in range(memory.size(1)):
             text_word_features = memory[:, i, :].unsqueeze(1)
-            # print("text_word_features shape: ", text_word_features.shape)  # len, b, c
             text_word_masks = memory_key_padding_mask[i, :].unsqueeze(0)
-            # print("text_word_masks shape: ", text_word_masks.shape)  # b, len
             pos_s = pos[:, i, :].unsqueeze(1)
-            # print("pos_s shape: ", pos_s.shape)  # len, b, c
             tgt2 = self.multihead_attn(query=self.with_pos_embed(tgt, query_pos),
                                        key=self.with_pos_embed(text_word_features, pos_s),
                                        value=text_word_features, attn_mask=None,
                                        key_padding_mask=text_word_masks)[0]
             attention_outputs.append(tgt2)
-            # print("tgt2 shape: ", tgt2.shape)  # thw, b, c
             # Flatten the output and pass through MLP to get weight for each sentence
             flatten_output = tgt2.flatten(start_dim=1)
             weight = self.ffn(flatten_output)
-            # print("weight shape: ", weight.shape)  # thw, 1
             weights.append(weight)
 
-        # attention_outputs = torch.stack(attention_outputs)  
         weights = torch.stack(weights)  # Shape: (3, thw, 1)
         # Normalize weights (e.g., using softmax)
         weights = nn.functional.softmax(weights, dim=0)  # Shape: (3, thw, 1)

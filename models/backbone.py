@@ -65,7 +65,6 @@ class BackboneBase(nn.Module):
                 parameter.requires_grad_(False)
         if return_interm_layers:
             return_layers = {"layer1": "0", "layer2": "1", "layer3": "2", "layer4": "3"}
-            # return_layers = {"layer2": "0", "layer3": "1", "layer4": "2"} deformable detr
             self.strides = [4, 8, 16, 32]
             self.num_channels = [256, 512, 1024, 2048]
         else:

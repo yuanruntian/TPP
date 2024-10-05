@@ -137,8 +137,6 @@ class DeformableTransformer(nn.Module):
         return valid_ratio
 
     def forward(self, srcs, tgt, masks, pos_embeds, query_embed=None, ref_pts=None, track_mask=None, track_memory=None):
-    # def forward(self, srcs, tgt, masks, pos_embeds, ref_pts=None):
-        # assert self.two_stage or query_embed is not None
         """
         srcs (list[Tensor]): list of tensors num_layers x [batch_size*time, c, hi, wi], input of encoder
         tgt (Tensor): [batch_size, time, c, num_queries_per_frame]
@@ -197,23 +195,17 @@ class DeformableTransformer(nn.Module):
         else:
             b, t, q, c = tgt.shape
             tgt = rearrange(tgt, 'b t q c -> (b t) q c')  # 1,5,256
-            # query_embed = query_embed.unsqueeze(0).expand(b*t, -1, -1)      # [batch_size*time, num_queries_per_frame, c]
-            # reference_points = self.reference_points(query_embed).sigmoid() # [batch_size*time, num_queries_per_frame, 2]
             reference_points = ref_pts.unsqueeze(0).repeat(bs, 1, 1).sigmoid()   # [1,5,2]
             init_reference_out = reference_points
         
         h, w = spatial_shapes[0]
         track_memory = memory[:, :h*w, :].reshape(bs, h, w, c)
         memory_new = None
-        # print(memory.shape)
-        # if track_mask is not zeros
         if track_mask.sum() != 0: 
             memory_new = memory.detach().clone()
             memory_new_1 = memory_new[:, :h*w, :]
             # query: memory[:,spatial_shapes[0],:] key:conv on track_mask value:conv on track_mask
-            # print(track_mask.shape, track_memory.shape)
             track_mask_concat = torch.cat((track_mask.permute(0,2,3,1), track_memory), dim=-1)
-            # track_mask = track_mask.reshape(bs, h*w, -1)
             key = self.conv_key(track_mask_concat.permute(0,3,1,2))
             value = self.conv_value(track_mask_concat.permute(0,3,1,2))
             att = torch.bmm(memory_new_1, key.reshape(bs, -1, h*w))
@@ -232,9 +224,6 @@ class DeformableTransformer(nn.Module):
                 memory_features.append(memory_lvl)
                 spatial_index += h * w
             memory_new = torch.cat(memory_features, 1)
-            # print(memory_new.shape)
-
-        # track_memory = torch.zeros(bs, h, w, c)
 
         # decoder
         if memory_new is not None:
@@ -243,8 +232,6 @@ class DeformableTransformer(nn.Module):
         else:
             hs, inter_references, inter_samples = self.decoder(tgt, reference_points, memory,
                                             spatial_shapes, level_start_index, valid_ratios, query_embed, mask_flatten)
-        # hs, inter_references, inter_samples = self.decoder(tgt, reference_points, memory,
-        #                                                    spatial_shapes, level_start_index, valid_ratios, mask_flatten)
 
         inter_references_out = inter_references
 
@@ -409,8 +396,6 @@ class DeformableTransformerDecoder(nn.Module):
 
     def forward(self, tgt, reference_points, src, src_spatial_shapes, src_level_start_index, src_valid_ratios,
                 query_pos=None, src_padding_mask=None):
-    # def forward(self, tgt, reference_points, src, src_spatial_shapes, src_level_start_index, src_valid_ratios,
-    #             src_padding_mask=None):
         # we modify here for get the information of sample points
         output = tgt
 
@@ -424,11 +409,7 @@ class DeformableTransformerDecoder(nn.Module):
             else:
                 assert reference_points.shape[-1] == 2
                 reference_points_input = reference_points[:, :, None] * src_valid_ratios[:, None]  # 1,5,4,2
-            # if query_pos is None:
-            #     if reference_points.shape[-1] == 4:
-            #         query_pos = pos2posemb(reference_points)
-            #     else:
-            #         query_pos = pos2posemb(reference_points, 128)
+
             output, sampling_locations, attention_weights = layer(output, query_pos, reference_points_input,
                                                         src, src_spatial_shapes, src_level_start_index, src_padding_mask)
 

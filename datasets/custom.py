@@ -14,8 +14,6 @@ import json
 import numpy as np
 import random
 
-from datasets.categories import custom_category_dict as category_dict
-
 
 class CustomDataset(Dataset):
     """
@@ -31,18 +29,13 @@ class CustomDataset(Dataset):
         self.return_masks = return_masks # not used
         self.num_frames = num_frames     
         self.max_skip = max_skip
-        # self.memory_size = 5  # 1/5 labeled
         # create video meta data
         self.prepare_metas()
   
         print('\n video num: ', len(self.videos), ' clip num: ', len(self.metas))  
         print('\n')    
 
-    def prepare_metas(self):
-        # read object information
-        # with open(os.path.join(str(self.img_folder), 'meta.json'), 'r') as f:
-        #     subset_metas_by_video = json.load(f)['videos']
-        
+    def prepare_metas(self):        
         # read expression data
         with open(str(self.ann_file), 'r') as f:
             subset_expressions_by_video = json.load(f)['videos']
@@ -50,25 +43,20 @@ class CustomDataset(Dataset):
 
         self.metas = []
         for vid in self.videos:
-            # vid_meta = subset_metas_by_video[vid]
             vid_data = subset_expressions_by_video[vid]
             vid_frames = sorted(vid_data['frames'])
             vid_len = len(vid_frames)
-            # for exp_id, exp_dict in vid_data['expressions'].items():
             for frame_id in range(0, vid_len, self.num_frames):
-            # for frame_id in range(0, vid_len, self.memory_size):
                 meta = {}
                 meta['video'] = vid
                 meta['exp'] = []
                 for exp_id, exp_dict in vid_data['expressions'].items():
                     meta['exp'].append(exp_dict['exp'])
-                # meta['exp'] = exp_dict['exp']
                 meta['obj_id'] = int(exp_dict['obj_id'])
                 meta['frames'] = vid_frames
                 meta['frame_id'] = frame_id
                 # get object category
                 obj_id = exp_dict['obj_id']
-                # meta['category'] = vid_meta['objects'][obj_id]['category']
                 
                 self.metas.append(meta)
     
@@ -90,17 +78,12 @@ class CustomDataset(Dataset):
 
             video, exp, obj_id, frames, frame_id = \
                         meta['video'], meta['exp'], meta['obj_id'], meta['frames'], meta['frame_id']
-            # clean up the caption
-            # exp = " ".join(exp.lower().split())
-            # print(exp)
-            # category_id = category_dict[category]
             category_id = 0
             vid_len = len(frames)
 
             num_frames = self.num_frames
             # random sparse sample
             sample_indx = [frame_id]
-            # print('labeled_frame:', frames[frame_id])
             if self.num_frames != 1:
                 # local sample
                 sample_id_before = random.randint(1, 3)
@@ -129,7 +112,6 @@ class CustomDataset(Dataset):
                 # create the target
                 label =  torch.tensor(category_id) 
                 mask = np.array(mask) / 255
-                # print(mask.max())
                 mask = (mask==obj_id).astype(np.float32) # 0,1 binary
                 if (mask > 0).any():
                     y1, y2, x1, x2 = self.bounding_box(mask)
