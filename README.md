@@ -4,6 +4,9 @@ Code and data for "Text-promptable Propagation for Referring Medical Image Seque
 
 ## Datasets
 We curate a large and comprehensive benchmark for referring medical image sequence segmentation. The benchmark is sourced from 18 datasets consist of medical image sequences, including 20 anatomical structures across 4 different imaging modalities. Processed data with text prompts is coming soon.
+<div align=center>
+<img src="https://github.com/yuanruntian/TPP/blob/main/datasets.jpg" width=800px>
+</div>
 
 **Note:** if you plan to use these datasets, be sure to follow the citation guidelines provided by the original authors.
 | Dataset                                        | Class                                                                               | Modality   | Link                                                                                   | Processed data |
