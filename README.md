@@ -1,6 +1,7 @@
 # TPP
 
 Code and data for "Text-promptable Propagation for Referring Medical Image Sequence Segmentation". 
+<img src="https://github.com/yuanruntian/TPP/blob/main/arch.jpg" width=800px>
 
 ## Datasets
 We curate a large and comprehensive benchmark for referring medical image sequence segmentation. The benchmark is sourced from 18 datasets consist of medical image sequences, including 20 anatomical structures across 4 different imaging modalities. Processed data with text prompts is coming soon.
