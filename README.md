@@ -1,6 +1,7 @@
 # TPP
 
 Code and data for "Text-promptable Propagation for Referring Medical Image Sequence Segmentation". 
+
 <img src="https://github.com/yuanruntian/TPP/blob/main/arch.jpg" width=800px>
 
 ## Datasets
